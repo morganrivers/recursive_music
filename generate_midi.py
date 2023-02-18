@@ -74,14 +74,3 @@ for i in range(fractal_dimensions):
 score.add_pitches_to_score(children_diatonic_positions, children_note_durations)
 
 score.save_score("test.mid")
-
-
-# score.add_pitches_to_score(children_diatonic_positions, children_durations)
-
-# (
-#     grandchildren_diatonic_positions,
-#     grandchildren_durations,
-# ) = create_children_of_notes_from_pattern(
-#     children_diatonic_positions, children_durations, note_shift_pattern
-# )
-# score.add_pitches_to_score(grandchildren_diatonic_positions, grandchildren_durations)
