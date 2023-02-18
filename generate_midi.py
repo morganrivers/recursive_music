@@ -1,76 +1,68 @@
+from generator import Generator
 from score import Score
+
+OCTAVE_NOTES = 8
+
+
+def oct_d(note):
+    return note - OCTAVE_NOTES + 1
+
+
+def oct_dd(note):
+    return note - 2 * OCTAVE_NOTES + 1
+
+
+def oct_u(note):
+    return note + OCTAVE_NOTES - 1
+
+
+def oct_uu(note):
+    return note - 2 * OCTAVE_NOTES - 1
+
+
+generator = Generator()
+
+# 1 being C, 2 being D, etc, in a C major (or minor) scale
+# (actual pitches don't match that scale though.
+# for example, [1, 2, 3, 4, 5, 6, 7, oct_u(1)] would be an ascending major scale
+notes_to_pattern_from_first_fractal_dimension = [1, 6, 5]
+
+key = "major"
+
+note_shift_pattern_dim_1 = generator.get_shift_pattern_from_notes(
+    notes_to_pattern_from_first_fractal_dimension
+)
+
+note_shift_patterns_at_each_dimension = [
+    note_shift_pattern_dim_1,
+    note_shift_pattern_dim_1,
+    note_shift_pattern_dim_1,
+    note_shift_pattern_dim_1,
+]
+multiplier_on_pattern_at_each_dimension = [1, 1, 1, 1]
+
+fractal_dimensions_to_play_over_time = [1, 1, 1, 2, 3, 3, 2, 2, 1, 1]
+tempo_multiplier_over_time = [4, 4, 4, 3, 1, 1, 3, 2.5, 4, 3]
+measure_duration = 16
 
 score = Score()
 
+fractal_dimensions_to_compute = max(fractal_dimensions_to_play_over_time)
 
-def create_note_children_from_pattern(
-    parent_diatonic_position, parent_note_duration, note_shift_pattern
-):
-    """Create a list of child notes from a parent note and a pattern of note shifts."""
+pitches_at_dimension, durations_at_dimension = generator.create_fractal_notes(
+    fractal_dimensions_to_compute,
+    measure_duration,
+    multiplier_on_pattern_at_each_dimension,
+    note_shift_patterns_at_each_dimension,
+)
 
-    # the note plus the changes is the total number of children
-    subdivisions = len(note_shift_pattern) + 1
-    child_duration = parent_note_duration / subdivisions
-    children_durations = [child_duration] * subdivisions
-    # first note is always the original note
-    first_child = parent_diatonic_position
+filename = "test.mid"
 
-    children_diatonic_positions = [first_child]
-    net_shift = 0
-    for shift in note_shift_pattern:
-        net_shift = shift + net_shift
-        children_diatonic_positions.append(parent_diatonic_position + net_shift)
-
-    return children_diatonic_positions, children_durations
-
-
-def create_children_of_notes_from_pattern(
-    parent_diatonic_positions, parent_note_durations, note_shift_pattern
-):
-    all_children_diatonic_positions = []
-    all_children_durations = []
-    for i in range(len(parent_diatonic_positions)):
-        parent_diatonic_position = parent_diatonic_positions[i]
-        parent_note_duration = parent_note_durations[i]
-        (
-            children_diatonic_positions,
-            children_durations,
-        ) = create_note_children_from_pattern(
-            parent_diatonic_position, parent_note_duration, note_shift_pattern
-        )
-
-        all_children_diatonic_positions = (
-            all_children_diatonic_positions + children_diatonic_positions
-        )
-        all_children_durations = all_children_durations + children_durations
-    print("all_children_diatonic_positions")
-    print(all_children_diatonic_positions)
-    print("all_children_durations")
-    print(all_children_durations)
-    return all_children_diatonic_positions, all_children_durations
-
-
-note_shift_pattern = [1, 1]  # movements along the diatonic scale to create the pattern
-
-parent_diatonic_position = 1
-parent_note_duration = 4
-
-fractal_dimensions = 6
-parent_diatonic_positions = [parent_diatonic_position]
-parent_note_durations = [parent_note_duration]
-for i in range(fractal_dimensions):
-    score.add_pitches_to_score(parent_diatonic_positions, parent_note_durations)
-
-    (
-        children_diatonic_positions,
-        children_note_durations,
-    ) = create_children_of_notes_from_pattern(
-        parent_diatonic_positions, parent_note_durations, note_shift_pattern
-    )
-
-    parent_diatonic_positions = children_diatonic_positions
-    parent_note_durations = children_note_durations
-
-score.add_pitches_to_score(children_diatonic_positions, children_note_durations)
-
-score.save_score("test.mid")
+score.create_score(
+    key,
+    tempo_multiplier_over_time,
+    fractal_dimensions_to_play_over_time,
+    pitches_at_dimension,
+    durations_at_dimension,
+    filename,
+)
